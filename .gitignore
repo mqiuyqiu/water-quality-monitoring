@@ -1,0 +1,28 @@
+# 编译产物
+build/
+Debug/
+Release/
+*.o
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+*.d
+
+# CubeMX 临时文件
+*.ioc.bak
+*.orig
+.mxproject.bak
+
+# VS Code / 编辑器
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# CMake 缓存
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
