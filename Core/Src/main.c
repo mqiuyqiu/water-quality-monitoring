@@ -25,6 +25,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
+#include "esp8266.h"
 
 /* USER CODE END Includes */
 
@@ -95,6 +97,18 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);  // 板载LED亮
+
+  /* ESP8266 初始化：启动中断接收 + 连接WiFi */
+  ESP8266_StartReceive();
+  if (ESP8266_JoinAP("QIU‘SPC", ";645Vk77") == ESP_OK)
+  {
+    printf("WiFi连接成功\r\n");
+  }
+  else
+  {
+    printf("WiFi连接失败\r\n");
+  }
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -106,8 +120,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    printf("碧水哨兵系统运行中... LED闪烁测试\r\n");
-    HAL_Delay(1000);
+    ESP8266_ReportHTTP("192.168.137.1", "8080",
+                   "/water_sentinel?pH=7.25&tds=120&temp=25.6");
+    HAL_Delay(10000); 
+    
   }
   /* USER CODE END 3 */
 }
@@ -160,11 +176,12 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 #include <stdio.h>
+#include <sys/stat.h>
 
-int fputc(int ch, FILE *f)
+int _write(int file, char *ptr, int len)
 {
-  HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xFFFF);
-  return ch;
+  HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, 100);
+  return len;
 }
 /* USER CODE END 4 */
 
