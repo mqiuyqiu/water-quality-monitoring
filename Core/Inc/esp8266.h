@@ -39,4 +39,7 @@ void ESP8266_TCPClose(void);
 /* HTTP GET 上报（云平台数据接口） */
 uint8_t ESP8266_ReportHTTP(const char *host, const char *port, const char *path);
 
+/* 巴法云 TCP 数据上报（官方协议，bemfa.com:8344） */
+uint8_t ESP8266_ReportBemfa(const char *uid, const char *topic, const char *msg);
+
 #endif

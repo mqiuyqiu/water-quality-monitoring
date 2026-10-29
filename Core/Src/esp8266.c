@@ -195,6 +195,36 @@ void ESP8266_TCPClose(void)
 }
 
 /**
+  * @brief 巴法云 TCP 数据上报（官方协议，绕开 HTTP 接口限制）
+  * @param uid   用户私钥（控制台获取）
+  * @param topic 主题名称（仅限字母数字）
+  * @param msg   数据内容，自由字符串，如 "7.25,120,25.6"
+  * @return ESP_OK 上报成功（收到 cmd=2&res=1）
+  *         每次短连接：连上-发送-断开，免费额度下够用
+  */
+uint8_t ESP8266_ReportBemfa(const char *uid, const char *topic, const char *msg)
+{
+  char cmd[200];
+  uint8_t ret;
+
+  /* 1. 连接巴法云 TCP 服务器（bemfa.com:8344） */
+  ret = ESP8266_TCPConnect("bemfa.com", "8344");
+  if (ret != ESP_OK)
+    return ret;
+
+  /* 2. 构造发布指令：cmd=2&uid=私钥&topic=主题&msg=数据\r\n */
+  snprintf(cmd, sizeof(cmd), "cmd=2&uid=%s&topic=%s&msg=%s\r\n", uid, topic, msg);
+
+  /* 3. 发送并等待 res=1 */
+  ret = ESP8266_SendTCPData(cmd);
+  ESP8266_TCPClose();
+  if (ret != ESP_OK)
+    return ret;
+
+  return ESP_OK;
+}
+
+/**
   * @brief HTTP GET 数据上报
   * @param host 服务器域名，如 "api.bemfa.com"
   * @param port 端口，如 "80"

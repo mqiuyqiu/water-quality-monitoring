@@ -46,11 +46,13 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/esp8266.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/Hardware/OLED/oled.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
+    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/Hardware/OLED
 )
 
 # Add project symbols (macros)

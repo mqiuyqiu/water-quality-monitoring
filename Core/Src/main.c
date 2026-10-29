@@ -26,7 +26,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <string.h>
 #include "esp8266.h"
+#include "oled.h"
+
 
 /* USER CODE END Includes */
 
@@ -98,9 +101,18 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);  // 板载LED亮
 
+  /* OLED 初始化 + 显示（现成驱动，硬件 I2C 地址 0x78） */
+  OLED_Init();
+  OLED_Clear();
+  OLED_ShowString(0, 0, "Water Sentinel", 16);
+  OLED_ShowString(0, 16, "pH: 7.25", 16);
+  OLED_ShowString(0, 32, "TDS: 120ppm", 16);
+  OLED_ShowString(0, 48, "Temp: 25.6 C", 16);
+  OLED_Refresh();
+
   /* ESP8266 初始化：启动中断接收 + 连接WiFi */
   ESP8266_StartReceive();
-  if (ESP8266_JoinAP("QIU‘SPC", ";645Vk77") == ESP_OK)
+  if (ESP8266_JoinAP("QIU'SPC", ";645Vk77") == ESP_OK)
   {
     printf("WiFi连接成功\r\n");
   }
@@ -120,10 +132,20 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    ESP8266_ReportHTTP("192.168.137.1", "8080",
-                   "/water_sentinel?pH=7.25&tds=120&temp=25.6");
-    HAL_Delay(10000); 
-    
+    /* 上报到巴法云（TCP 方式，官方协议 bemfa.com:8344） */
+    if (ESP8266_ReportBemfa("95c447de6f16c0c035c5b2ba0127a107",   // 私钥（控制台获取）
+                            "watersentinel",                       // 主题（与控制台一致）
+                            "7.25,120,25.6") == ESP_OK)           // 数据：pH,TDS,水温
+      printf("云平台上报成功\r\n");
+    else
+      printf("云平台上报失败\r\n");
+    HAL_Delay(60000);   // 60秒一次（测试期），正式版再调成10分钟
+    /* OLED 动态刷新显示 */
+    OLED_ShowString(0, 16, "pH: 7.25   ", 16);
+    OLED_ShowString(0, 32, "TDS: 120ppm", 16);
+    OLED_ShowString(0, 48, "Temp: 25.6C", 16);
+    OLED_Refresh();
+
   }
   /* USER CODE END 3 */
 }
