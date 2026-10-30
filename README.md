@@ -62,8 +62,8 @@
 | PA5 | GPIO_Input | DS18B20 DATA（单总线，需 4.7kΩ 上拉到 3.3V） | 上拉输入 |
 | PA9 | USART1_TX | USB 转 TTL RX（调试串口） | 复用推挽输出 |
 | PA10 | USART1_RX | USB 转 TTL TX（调试串口） | 浮空输入 |
-| PB6 | I2C1_SCL | OLED SCL | 复用开漏输出 |
-| PB7 | I2C1_SDA | OLED SDA | 复用开漏输出 |
+| PB8 | I2C1_SCL | OLED SCL（I2C1 重映射） | 复用开漏输出 |
+| PB9 | I2C1_SDA | OLED SDA（I2C1 重映射） | 复用开漏输出 |
 | PB12 | GPIO_Output | 有源蜂鸣器（经 S8050 三极管驱动） | 推挽输出，默认低 |
 | PB13 | GPIO_Output | 报警 LED（串联 220Ω 电阻） | 推挽输出，默认低 |
 | PC13 | GPIO_Output | 板载 LED（调试用） | 推挽输出，默认低 |
@@ -80,10 +80,37 @@
 
 ### 注意事项
 
-- DS18B20 的 DATA 引脚与 3.3V 之间必须接 **4.7kΩ 上拉电阻**
+- DS18B20 的 DATA 引脚与 3.3V 之间必须接 **4.7kΩ 上拉电阻**（购买的转接板已带）
 - PH4502C 模块需 **5V 供电**，输出模拟信号到 PA0
 - ESP8266 峰值电流 300mA，建议独立 3.3V LDO 或在 VCC 端加 100μF 电容
 - pH 电极不可长时间干放，不用时浸泡在 KCl 保存液或蒸馏水中
+
+### 传感器接线配对表（按此接线）
+
+| 模块 | 模块引脚 | 接 STM32 / 电源 | 说明 |
+|------|---------|----------------|------|
+| **pH 模块**（PH4502C） | VCC | 5V | 需 5V 供电 |
+| | GND | GND | 共地 |
+| | PO | **PA0** (ADC1_IN0) | 模拟输出 0~3.0V，可直接接 |
+| | DO | 不接 | 阈值输出，未使用 |
+| **TDS 模块** | VCC | 3.3V ~ 5V | 按模块标称 |
+| | GND | GND | 共地 |
+| | AO | **PA1** (ADC1_IN1) | 模拟输出 0~2.3V，可直接接 |
+| **DS18B20**（防水探头） | 红线 | 3.3V | |
+| | 黑线 | GND | |
+| | 黄线（DATA） | **PA5** | 转接板已带上拉电阻 |
+| **OLED**（0.96 寸 I2C） | VCC | 3.3V | |
+| | GND | GND | |
+| | SCL | **PB8** | I2C1_SCL（重映射） |
+| | SDA | **PB9** | I2C1_SDA（重映射） |
+| **ESP8266-01S** | VCC | **3.3V** | ⚠️ 禁止接 5V，会烧毁 |
+| | GND | GND | |
+| | TX | **PA3** (USART2_RX) | 交叉连接 |
+| | RX | **PA2** (USART2_TX) | 交叉连接 |
+| | CH_PD / EN | **3.3V** | ⚠️ 必须接高电平，悬空不工作 |
+| **蜂鸣器**（有源） | 信号 | **PB12** | 经三极管驱动 |
+| **报警 LED** | 正极 | **PB13**（串联 220Ω） | 负极接 GND |
+| **板载 LED** | — | **PC13** | 调试用 |
 
 ---
 
@@ -97,6 +124,12 @@
 | VS Code | 代码编辑器 | [code.visualstudio.com](https://code.visualstudio.com/) |
 | STM32CubeCLT | 命令行工具集（含 ARM-GCC 编译器 + OpenOCD 调试器） | [st.com](https://www.st.com/en/development-tools/stm32cubeclt.html) |
 | Git | 版本控制 | [git-scm.com](https://git-scm.com/) |
+
+### STM32CubeMX 配置教程（视频）
+
+| 教程 | 说明 | 链接 |
+|------|------|------|
+| 如何使用 STM32CubeMX 快速配置工程【简单入门】 | 电子科技大学自动化学院创客中心 · 25 分钟手把手入门 | [B 站 BV1EBpxepEec](https://www.bilibili.com/video/BV1EBpxepEec/) |
 
 ### VS Code 插件
 
